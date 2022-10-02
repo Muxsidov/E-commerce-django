@@ -1,0 +1,36 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Listings</h2>
+    {% if not listings %}
+        We do not have any auctions
+    {% else %}
+        {% for listing in listings %}
+        <a style="text-decoration: none !important; color: black;" href="{%url 'listing' listing.id%}">
+            <div class="sep-listing">  
+                <br>Title: {{listing.title}}<br>
+                <br>Author: {{listing.created_by}}<br>
+                <br>Descriptino: {{listing.description}}<br>
+                <br>Original Price: {{listing.current_price}}<br>
+                <br>Bidded Price: 
+                    {%if listing.bidded%}
+                        {{listing.bidded}}
+                    {%else%}
+                        Nothing bidded yet
+                    {% endif %}
+                <br>
+                {%if listing.image%}
+                    <br><img src= "{{listing.image}}" alt="image"/><br>
+                {%else%}
+                {% endif %}
+                {%if listing.image_url%}
+                    <br><img src="{{listing.image_url}}" alt="image_url"/><br>
+                {%else%}
+                {% endif %}
+                <br>
+                Category: {{listing.category.name}}
+            </div>
+        </a>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

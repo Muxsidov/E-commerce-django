@@ -1,0 +1,12 @@
+{% extends "auctions/layout.html" %}
+{% block body %}
+    {% for category in categories %}
+        <a style="text-decoration: none !important; color: black;" href="{% url 'category' category.name %}">
+            <div class="sep-listing">  
+                <ul>
+                    <li>{{ category.name }}</li>
+                </ul>
+            </div>
+        </a>
+    {% endfor %}
+{% endblock %}

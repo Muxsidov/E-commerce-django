@@ -1,0 +1,122 @@
+{% extends "auctions/layout.html" %}
+
+{% load static %}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" 
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" 
+    crossorigin="anonymous">
+<link rel="stylesheet" href="{% static 'styles.css' %}" >
+
+
+{% block body %}
+
+    <br>Title: {{listing.title}}<br>
+    Author: {{listing.created_by}}<br>
+    <br>Descriptin: {{listing.description}}<br>
+    <br>Original Price: {{listing.current_price}}<br>
+    Bidded Price: 
+    {%if listing.bidded%}
+        {{listing.bidded}}
+    {%else%}
+        Nothing bidded yet
+    {% endif %}
+    <br>
+    {%if listing.image %}
+        <br><img src= "{{listing.image}}" alt="image"/><br>
+    {%else%}
+    {% endif %}
+    {%if listing.image_url%}
+        <br><img src="{{listing.image_url}}" alt="image_url"/><br>
+    {%else%}
+    {% endif %}
+    <br>
+    Category: {{listing.category.name}}
+
+    <form method="POST" action="{% url 'user_wishlist' listing.id%}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button name = 'button' type ='submit' value="{{listing.id}}" class='' >Add to the watchlist / Remove from the watchlist</button>
+    </form>
+
+    {% if user.is_authenticated %}
+        <hr>
+        {% if listing.closed == False %}
+            {% if listing.bidded %} 
+                <p value="{{listing.bidded.bid}}">Current Bid: {{listing.bidded.bid}}</p>
+            {% else %}
+                <p value="{{listing.starting_bid}}">Initial Bid: {{listing.current_price}}</p>
+            {% endif %}  
+        {% else %}
+            <p value="{{listing.current_price}}">Close in: {{listing.current_price}}</p>
+            {% if listing.bidded.user.username == request.user.username %}
+                <p class="alert alert-success" role="alert">You won this listing!</p>
+            {% else %}
+                <p>Sold to {{listing.bidded.user.username|title}}</p>
+            {% endif %}
+        {% endif %}     
+
+        {% if request.user != listing.created_by %}
+            {% if listing.closed == False %}
+            {{listing.bids.count}} bid(s) so far.
+                {% if listing.bidded.user == request.user %}
+                    Your bid is the current bid.
+                {% endif %}
+
+                <div>
+                    <form method="POST" data-startingbid="{{listing.starting_bid}}" data-lastbid="{{listing.bidded}}" 
+                            data-listing="{{listing.id}}" action="{% url 'bid_to_listing' listing=listing.id %}">
+                        {% csrf_token %}
+                        <input type="number" name="totalBid" id="newBid" 
+                         placeholder="Total bid">
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+
+                {% if message %}
+                    <div class="alert alert-warning" role="alert">{{ message }}</div>
+                {% endif %}
+
+            {% endif %}
+        {% endif %}
+
+        {% if listing.created_by == request.user %}
+            <div>
+                <a href="{% url 'delete_product' listing.id %}">Delete</a>
+                <br> 
+                {% if listing.closed == False %}
+                <a href="{% url 'close_listing' listing.id %}">Close listing</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <hr>
+        <br>
+        <h3>Comment on Item!</h3>
+        <form method="POST">
+            {% csrf_token %}
+            {{ comment_form.name }}
+            <br>
+            {{ comment_form.body }}
+            <br>
+            <button> Add Comment </button>
+        </form>
+        <br>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Log In</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Register</a>
+        </li>
+    {% endif %}
+
+    <h3>Comments: </h3>
+    {% if not listing.comments.all %}
+        No Comments
+        <br>
+    {% else %}
+        {%for comment in listing.comments.all %}
+            {{ comment.name }}:
+            {{ comment.body }}
+            <br>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
